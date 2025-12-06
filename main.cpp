@@ -1,735 +1,813 @@
 #include <iostream>
-#include <fstream>
+#include <iomanip>
 #include <string>
 #include <vector>
-#include <iomanip>
+#include <fstream>
 #include <sstream>
+#include <ctime>
 #include <algorithm>
 #include <cctype>
+#include <limits>
 
 using namespace std;
 
-// Student class definition
-class Student {
-private:
+// ====================== PERSON ======================
+class Person {
+protected:
     int id;
     string name;
-    int age;
-    string department;
-    float gpa;
-    int attendance;
+    string phone;
+    string email;
 
 public:
-    // Constructor
-    Student(int id = 0, string name = "", int age = 0,
-            string department = "", float gpa = 0.0, int attendance = 0) {
-        this->id = id;
-        this->name = name;
-        this->age = age;
-        this->department = department;
-        this->gpa = gpa;
-        this->attendance = attendance;
-    }
+    Person() : id(0) {}
+    Person(int id, string name, string phone, string email)
+        : id(id), name(name), phone(phone), email(email) {}
 
-    // Getters
     int getId() const { return id; }
     string getName() const { return name; }
-    int getAge() const { return age; }
-    string getDepartment() const { return department; }
-    float getGPA() const { return gpa; }
-    int getAttendance() const { return attendance; }
+    string getPhone() const { return phone; }
+    string getEmail() const { return email; }
 
-    // Setters
     void setId(int id) { this->id = id; }
     void setName(string name) { this->name = name; }
-    void setAge(int age) { this->age = age; }
-    void setDepartment(string department) { this->department = department; }
-    void setGPA(float gpa) { this->gpa = gpa; }
-    void setAttendance(int attendance) { this->attendance = attendance; }
+    void setPhone(string phone) { this->phone = phone; }
+    void setEmail(string email) { this->email = email; }
 
-    // Display student information
+    virtual void input() {
+        cout << "Enter Name: ";
+        getline(cin >> ws, name);
+
+        cout << "Enter Phone: ";
+        getline(cin, phone);
+
+        cout << "Enter Email: ";
+        getline(cin, email);
+    }
+};
+
+// ====================== CUSTOMER ======================
+class Customer : public Person {
+private:
+    string address;
+    string nationality;
+    string idProof;
+    string idNumber;
+
+public:
+    Customer() {}
+    Customer(int id, string name, string phone, string email,
+             string address, string nationality, string idProof, string idNumber)
+        : Person(id, name, phone, email), address(address), nationality(nationality), idProof(idProof), idNumber(idNumber) {}
+
+    string getAddress() const { return address; }
+    string getNationality() const { return nationality; }
+    string getIdProof() const { return idProof; }
+    string getIdNumber() const { return idNumber; }
+
+    void setAddress(string address) { this->address = address; }
+    void setNationality(string nationality) { this->nationality = nationality; }
+    void setIdProof(string idProof) { this->idProof = idProof; }
+    void setIdNumber(string idNumber) { this->idNumber = idNumber; }
+
     void display() const {
         cout << "\n┌─────────────────────────────────────────────────────┐" << endl;
-        cout << "│                 STUDENT INFORMATION                 │" << endl;
+        cout << "│                 CUSTOMER INFORMATION                │" << endl;
         cout << "├─────────────────────────────────────────────────────┤" << endl;
         cout << "│ ID:           " << setw(38) << left << id << "│" << endl;
         cout << "│ Name:         " << setw(38) << left << name << "│" << endl;
-        cout << "│ Age:          " << setw(38) << left << age << "│" << endl;
-        cout << "│ Department:   " << setw(38) << left << department << "│" << endl;
-        cout << "│ GPA:          " << setw(38) << left << fixed << setprecision(2) << gpa << "│" << endl;
-        cout << "│ Attendance:   " << setw(38) << left << attendance << "% │" << endl;
+        cout << "│ Phone:        " << setw(38) << left << phone << "│" << endl;
+        cout << "│ Email:        " << setw(38) << left << email << "│" << endl;
+        cout << "│ Address:      " << setw(38) << left << address << "│" << endl;
+        cout << "│ Nationality:  " << setw(38) << left << nationality << "│" << endl;
+        cout << "│ ID Proof:     " << setw(38) << left << idProof << "│" << endl;
+        cout << "│ ID Number:    " << setw(38) << left << idNumber << "│" << endl;
         cout << "└─────────────────────────────────────────────────────┘" << endl;
     }
 
-    // Convert to string for file storage
-    string toString() const {
-        return to_string(id) + "," + name + "," + to_string(age) + "," +
-               department + "," + to_string(gpa) + "," + to_string(attendance);
-    }
-
-    // Load from string
-    static Student fromString(const string& str) {
-        vector<string> tokens;
-        string token;
-        stringstream ss(str);
-
-        while (getline(ss, token, ',')) {
-            tokens.push_back(token);
-        }
-
-        if (tokens.size() == 6) {
-            int id = stoi(tokens[0]);
-            int age = stoi(tokens[2]);
-            float gpa = stof(tokens[4]);
-            int attendance = stoi(tokens[5]);
-
-            return Student(id, tokens[1], age, tokens[3], gpa, attendance);
-        }
-
-        return Student();
+    void input() override {
+        Person::input();
+        cout << "Enter Address: ";
+        getline(cin >> ws, address);
+        cout << "Enter Nationality: ";
+        getline(cin, nationality);
+        cout << "Enter ID Proof Type (Passport/Driving License/ID Card): ";
+        getline(cin, idProof);
+        cout << "Enter ID Number: ";
+        getline(cin, idNumber);
     }
 };
 
-// Student Management System Class
-class StudentManagementSystem {
+// ====================== ROOM ======================
+class Room {
 private:
-    vector<Student> students;
-    string filename;
-
-    // Helper function to validate GPA
-    bool isValidGPA(float gpa) {
-        return gpa >= 0.0 && gpa <= 4.0;
-    }
-
-    // Helper function to validate attendance
-    bool isValidAttendance(int attendance) {
-        return attendance >= 0 && attendance <= 100;
-    }
-
-    // Helper function to find student by ID
-    int findStudentIndex(int id) {
-        for (int i = 0; i < students.size(); i++) {
-            if (students[i].getId() == id) {
-                return i;
-            }
-        }
-        return -1;
-    }
+    int roomNumber;
+    string roomType;
+    double pricePerNight;
+    bool isAvailable;
+    int maxCapacity;
 
 public:
-    StudentManagementSystem(string filename = "students.txt") {
-        this->filename = filename;
-        loadFromFile();
+    Room() : roomNumber(0), roomType("Standard"), pricePerNight(100.0), isAvailable(true), maxCapacity(1) {}
+    Room(int roomNumber, string roomType, double pricePerNight, bool isAvailable, int maxCapacity)
+        : roomNumber(roomNumber), roomType(roomType), pricePerNight(pricePerNight), isAvailable(isAvailable), maxCapacity(maxCapacity) {}
+
+    int getRoomNumber() const { return roomNumber; }
+    string getRoomType() const { return roomType; }
+    double getPricePerNight() const { return pricePerNight; }
+    bool getIsAvailable() const { return isAvailable; }
+    int getMaxCapacity() const { return maxCapacity; }
+
+    void setRoomNumber(int roomNumber) { this->roomNumber = roomNumber; }
+    void setRoomType(string roomType) { this->roomType = roomType; }
+    void setPricePerNight(double pricePerNight) { this->pricePerNight = pricePerNight; }
+    void setIsAvailable(bool isAvailable) { this->isAvailable = isAvailable; }
+    void setMaxCapacity(int maxCapacity) { this->maxCapacity = maxCapacity; }
+
+    void display() const {
+        string status = isAvailable ? "Available" : "Occupied";
+        cout << "\n┌─────────────────────────────────────────────────────┐" << endl;
+        cout << "│                   ROOM INFORMATION                  │" << endl;
+        cout << "├─────────────────────────────────────────────────────┤" << endl;
+        cout << "│ Room Number:  " << setw(38) << left << roomNumber << "│" << endl;
+        cout << "│ Room Type:    " << setw(38) << left << roomType << "│" << endl;
+        cout << "│ Price/Night: $" << setw(37) << left << fixed << setprecision(2) << pricePerNight << "│" << endl;
+        cout << "│ Status:       " << setw(38) << left << status << "│" << endl;
+        cout << "│ Max Capacity: " << setw(38) << left << maxCapacity << "│" << endl;
+        cout << "└─────────────────────────────────────────────────────┘" << endl;
     }
 
-    // Add a new student
-    void addStudent() {
-        system("cls");
-        cout << "\n═══════════════════════════════════════════════════════════" << endl;
-        cout << "                    ADD NEW STUDENT" << endl;
-        cout << "═══════════════════════════════════════════════════════════" << endl;
-
-        Student student;
-        int id;
-        string name;
-        int age;
-        string department;
-        float gpa;
-        int attendance;
-
-        // Get student ID
-        cout << "\nEnter Student ID: ";
-        while (!(cin >> id) || id <= 0) {
-            cout << "Invalid ID! Please enter a positive integer: ";
+    void input() {
+        cout << "Enter Room Number: ";
+        while (!(cin >> roomNumber)) {
+            cout << "Invalid input. Enter numeric room number: ";
             cin.clear();
-            cin.ignore(1000, '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
 
-        // Check if ID already exists
-        if (findStudentIndex(id) != -1) {
-            cout << "\n❌ Student with ID " << id << " already exists!" << endl;
-            cout << "Press Enter to continue...";
-            cin.ignore();
-            cin.get();
-            return;
+        cout << "Room Types Available:" << endl;
+        vector<string> types = getRoomTypes();
+        for (int i = 0; i < (int)types.size(); ++i) {
+            cout << i+1 << ". " << types[i] << " - $" << getTypePrice(types[i]) << "/night" << endl;
         }
-
-        student.setId(id);
-
-        // Get student name
-        cout << "Enter Student Name: ";
-        cin.ignore();
-        getline(cin, name);
-        student.setName(name);
-
-        // Get student age
-        cout << "Enter Student Age: ";
-        while (!(cin >> age) || age < 16 || age > 60) {
-            cout << "Invalid age! Please enter age between 16-60: ";
-            cin.clear();
-            cin.ignore(1000, '\n');
-        }
-        student.setAge(age);
-
-        // Get department
-        cout << "Enter Department: ";
-        cin.ignore();
-        getline(cin, department);
-        student.setDepartment(department);
-
-        // Get GPA
-        cout << "Enter GPA (0.0 - 4.0): ";
-        while (!(cin >> gpa) || !isValidGPA(gpa)) {
-            cout << "Invalid GPA! Please enter value between 0.0 and 4.0: ";
-            cin.clear();
-            cin.ignore(1000, '\n');
-        }
-        student.setGPA(gpa);
-
-        // Get attendance
-        cout << "Enter Attendance Percentage (0-100): ";
-        while (!(cin >> attendance) || !isValidAttendance(attendance)) {
-            cout << "Invalid attendance! Please enter value between 0-100: ";
-            cin.clear();
-            cin.ignore(1000, '\n');
-        }
-        student.setAttendance(attendance);
-
-        students.push_back(student);
-        saveToFile();
-
-        cout << "\n✅ Student added successfully!" << endl;
-        cout << "Press Enter to continue...";
-        cin.ignore();
-        cin.get();
-    }
-
-    // Display all students
-    void displayAllStudents() {
-        system("cls");
-        cout << "\n═══════════════════════════════════════════════════════════" << endl;
-        cout << "                   ALL STUDENTS RECORDS" << endl;
-        cout << "═══════════════════════════════════════════════════════════" << endl;
-
-        if (students.empty()) {
-            cout << "\n📭 No student records found!" << endl;
-            cout << "Press Enter to continue...";
-            cin.ignore();
-            cin.get();
-            return;
-        }
-
-        // Display header
-        cout << "\n┌──────┬──────────────────────┬─────┬──────────────────┬──────┬─────────────┐" << endl;
-        cout << "│  ID  │        Name          │ Age │   Department    │ GPA  │ Attendance  │" << endl;
-        cout << "├──────┼──────────────────────┼─────┼──────────────────┼──────┼─────────────┤" << endl;
-
-        // Display each student
-        for (const auto& student : students) {
-            cout << "│ " << setw(4) << left << student.getId() << " │ "
-                 << setw(20) << left << (student.getName().length() > 20 ?
-                    student.getName().substr(0, 17) + "..." : student.getName()) << " │ "
-                 << setw(3) << left << student.getAge() << " │ "
-                 << setw(16) << left << (student.getDepartment().length() > 16 ?
-                    student.getDepartment().substr(0, 13) + "..." : student.getDepartment()) << " │ "
-                 << setw(4) << left << fixed << setprecision(2) << student.getGPA() << " │ "
-                 << setw(11) << left << to_string(student.getAttendance()) + "%" << " │" << endl;
-        }
-
-        cout << "└──────┴──────────────────────┴─────┴──────────────────┴──────┴─────────────┘" << endl;
-
-        // Display statistics
-        cout << "\n📊 Total Students: " << students.size() << endl;
-        cout << "Press Enter to continue...";
-        cin.ignore();
-        cin.get();
-    }
-
-    // Search for a student by ID
-    void searchStudent() {
-        system("cls");
-        cout << "\n═══════════════════════════════════════════════════════════" << endl;
-        cout << "                    SEARCH STUDENT" << endl;
-        cout << "═══════════════════════════════════════════════════════════" << endl;
-
-        int id;
-        cout << "\nEnter Student ID to search: ";
-        while (!(cin >> id) || id <= 0) {
-            cout << "Invalid ID! Please enter a positive integer: ";
-            cin.clear();
-            cin.ignore(1000, '\n');
-        }
-
-        int index = findStudentIndex(id);
-
-        if (index == -1) {
-            cout << "\n❌ Student with ID " << id << " not found!" << endl;
-        } else {
-            students[index].display();
-        }
-
-        cout << "Press Enter to continue...";
-        cin.ignore();
-        cin.get();
-    }
-
-    // Update student information
-    void updateStudent() {
-        system("cls");
-        cout << "\n═══════════════════════════════════════════════════════════" << endl;
-        cout << "                    UPDATE STUDENT" << endl;
-        cout << "═══════════════════════════════════════════════════════════" << endl;
-
-        int id;
-        cout << "\nEnter Student ID to update: ";
-        while (!(cin >> id) || id <= 0) {
-            cout << "Invalid ID! Please enter a positive integer: ";
-            cin.clear();
-            cin.ignore(1000, '\n');
-        }
-
-        int index = findStudentIndex(id);
-
-        if (index == -1) {
-            cout << "\n❌ Student with ID " << id << " not found!" << endl;
-            cout << "Press Enter to continue...";
-            cin.ignore();
-            cin.get();
-            return;
-        }
-
-        // Display current information
-        cout << "\nCurrent Information:" << endl;
-        students[index].display();
 
         int choice;
-        cout << "\n═══════════════════════════════════════════════════════════" << endl;
-        cout << "                 SELECT FIELD TO UPDATE" << endl;
-        cout << "═══════════════════════════════════════════════════════════" << endl;
-        cout << "1. Update Name" << endl;
-        cout << "2. Update Age" << endl;
-        cout << "3. Update Department" << endl;
-        cout << "4. Update GPA" << endl;
-        cout << "5. Update Attendance" << endl;
-        cout << "6. Update All Information" << endl;
-        cout << "7. Cancel Update" << endl;
-        cout << "═══════════════════════════════════════════════════════════" << endl;
-        cout << "Enter your choice (1-7): ";
-
-        while (!(cin >> choice) || choice < 1 || choice > 7) {
-            cout << "Invalid choice! Please enter 1-7: ";
+        cout << "Select Room Type (1-" << types.size() << "): ";
+        while (!(cin >> choice) || choice < 1 || choice > (int)types.size()) {
+            cout << "Invalid choice. Select (1-" << types.size() << "): ";
             cin.clear();
-            cin.ignore(1000, '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
 
-        if (choice == 7) {
-            cout << "\nUpdate cancelled." << endl;
-            cout << "Press Enter to continue...";
-            cin.ignore();
-            cin.get();
+        roomType = types[choice - 1];
+        pricePerNight = getTypePrice(roomType);
+
+        cout << "Enter Maximum Capacity: ";
+        while (!(cin >> maxCapacity) || maxCapacity < 1) {
+            cout << "Invalid. Enter a positive integer for capacity: ";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
+
+        isAvailable = true;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+
+    double calculatePrice(int nights) const {
+        return pricePerNight * nights;
+    }
+
+    static vector<string> getRoomTypes() {
+        return {"Standard", "Deluxe", "Suite", "Executive Suite", "Presidential Suite"};
+    }
+
+    static double getTypePrice(const string& roomType) {
+        if (roomType == "Standard") return 100.0;
+        if (roomType == "Deluxe") return 150.0;
+        if (roomType == "Suite") return 250.0;
+        if (roomType == "Executive Suite") return 400.0;
+        if (roomType == "Presidential Suite") return 800.0;
+        return 100.0;
+    }
+};
+
+// ====================== BOOKING ======================
+class Booking {
+private:
+    static int nextBookingId;
+
+    int bookingId;
+    Customer customer;
+    Room room;
+    string checkInDate;
+    string checkOutDate;
+    int numberOfNights;
+    int numberOfGuests;
+    string bookingStatus;
+
+public:
+    Booking() : bookingId(nextBookingId++), numberOfNights(0), numberOfGuests(1), bookingStatus("Confirmed") {}
+
+    Booking(Customer customer, Room room, string checkInDate, string checkOutDate, int numberOfGuests)
+        : bookingId(nextBookingId++), customer(customer), room(room), checkInDate(checkInDate), checkOutDate(checkOutDate), numberOfGuests(numberOfGuests), bookingStatus("Confirmed") {
+        numberOfNights = calculateNights(checkInDate, checkOutDate);
+    }
+
+    int getBookingId() const { return bookingId; }
+    Customer getCustomer() const { return customer; }
+    Room getRoom() const { return room; }
+    string getCheckInDate() const { return checkInDate; }
+    string getCheckOutDate() const { return checkOutDate; }
+    int getNumberOfNights() const { return numberOfNights; }
+    int getNumberOfGuests() const { return numberOfGuests; }
+    string getBookingStatus() const { return bookingStatus; }
+
+    void setCustomer(Customer customer) { this->customer = customer; }
+    void setRoom(Room room) { this->room = room; }
+    void setCheckInDate(string checkInDate) { this->checkInDate = checkInDate; if (!checkOutDate.empty()) numberOfNights = calculateNights(checkInDate, checkOutDate); }
+    void setCheckOutDate(string checkOutDate) { this->checkOutDate = checkOutDate; if (!checkInDate.empty()) numberOfNights = calculateNights(checkInDate, checkOutDate); }
+    void setNumberOfGuests(int numberOfGuests) { this->numberOfGuests = numberOfGuests; }
+    void setBookingStatus(string bookingStatus) { this->bookingStatus = bookingStatus; }
+
+    void display() const {
+        cout << "\n┌─────────────────────────────────────────────────────┐" << endl;
+        cout << "│                 BOOKING INFORMATION                 │" << endl;
+        cout << "├─────────────────────────────────────────────────────┤" << endl;
+        cout << "│ Booking ID:   " << setw(38) << left << bookingId << "│" << endl;
+        cout << "│ Customer:     " << setw(38) << left << customer.getName() << "│" << endl;
+        cout << "│ Room No:      " << setw(38) << left << room.getRoomNumber() << "│" << endl;
+        cout << "│ Room Type:    " << setw(38) << left << room.getRoomType() << "│" << endl;
+        cout << "│ Check-In:     " << setw(38) << left << checkInDate << "│" << endl;
+        cout << "│ Check-Out:    " << setw(38) << left << checkOutDate << "│" << endl;
+        cout << "│ Nights:       " << setw(38) << left << numberOfNights << "│" << endl;
+        cout << "│ Guests:       " << setw(38) << left << numberOfGuests << "│" << endl;
+        cout << "│ Total Cost:  $" << setw(37) << left << fixed << setprecision(2) << calculateTotalCost() << "│" << endl;
+        cout << "│ Status:       " << setw(38) << left << bookingStatus << "│" << endl;
+        cout << "└─────────────────────────────────────────────────────┘" << endl;
+    }
+
+    void input(vector<Room>& rooms, vector<Customer>& customers) {
+        if (customers.empty()) {
+            cout << "No customers available. Please add a customer first." << endl;
             return;
         }
 
-        string name;
-        int age;
-        string department;
-        float gpa;
-        int attendance;
-
-        switch (choice) {
-            case 1: // Update Name
-                cout << "Enter new Name: ";
-                cin.ignore();
-                getline(cin, name);
-                students[index].setName(name);
-                break;
-
-            case 2: // Update Age
-                cout << "Enter new Age: ";
-                while (!(cin >> age) || age < 16 || age > 60) {
-                    cout << "Invalid age! Please enter age between 16-60: ";
-                    cin.clear();
-                    cin.ignore(1000, '\n');
-                }
-                students[index].setAge(age);
-                break;
-
-            case 3: // Update Department
-                cout << "Enter new Department: ";
-                cin.ignore();
-                getline(cin, department);
-                students[index].setDepartment(department);
-                break;
-
-            case 4: // Update GPA
-                cout << "Enter new GPA (0.0 - 4.0): ";
-                while (!(cin >> gpa) || !isValidGPA(gpa)) {
-                    cout << "Invalid GPA! Please enter value between 0.0 and 4.0: ";
-                    cin.clear();
-                    cin.ignore(1000, '\n');
-                }
-                students[index].setGPA(gpa);
-                break;
-
-            case 5: // Update Attendance
-                cout << "Enter new Attendance Percentage (0-100): ";
-                while (!(cin >> attendance) || !isValidAttendance(attendance)) {
-                    cout << "Invalid attendance! Please enter value between 0-100: ";
-                    cin.clear();
-                    cin.ignore(1000, '\n');
-                }
-                students[index].setAttendance(attendance);
-                break;
-
-            case 6: // Update All
-                cout << "Enter new Name: ";
-                cin.ignore();
-                getline(cin, name);
-                students[index].setName(name);
-
-                cout << "Enter new Age: ";
-                while (!(cin >> age) || age < 16 || age > 60) {
-                    cout << "Invalid age! Please enter age between 16-60: ";
-                    cin.clear();
-                    cin.ignore(1000, '\n');
-                }
-                students[index].setAge(age);
-
-                cout << "Enter new Department: ";
-                cin.ignore();
-                getline(cin, department);
-                students[index].setDepartment(department);
-
-                cout << "Enter new GPA (0.0 - 4.0): ";
-                while (!(cin >> gpa) || !isValidGPA(gpa)) {
-                    cout << "Invalid GPA! Please enter value between 0.0 and 4.0: ";
-                    cin.clear();
-                    cin.ignore(1000, '\n');
-                }
-                students[index].setGPA(gpa);
-
-                cout << "Enter new Attendance Percentage (0-100): ";
-                while (!(cin >> attendance) || !isValidAttendance(attendance)) {
-                    cout << "Invalid attendance! Please enter value between 0-100: ";
-                    cin.clear();
-                    cin.ignore(1000, '\n');
-                }
-                students[index].setAttendance(attendance);
-                break;
+        cout << "\nSelect Customer:" << endl;
+        for (int i = 0; i < (int)customers.size(); ++i) {
+            cout << i+1 << ". " << customers[i].getName() << " (ID: " << customers[i].getId() << ")" << endl;
         }
 
-        saveToFile();
-        cout << "\n✅ Student information updated successfully!" << endl;
+        int customerChoice;
+        cout << "Enter choice (1-" << customers.size() << "): ";
+        while (!(cin >> customerChoice) || customerChoice < 1 || customerChoice > (int)customers.size()) {
+            cout << "Invalid choice. Enter (1-" << customers.size() << "): ";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
+        customer = customers[customerChoice - 1];
+
+        vector<int> availableIndices;
+        for (int i = 0; i < (int)rooms.size(); ++i) if (rooms[i].getIsAvailable()) availableIndices.push_back(i);
+
+        if (availableIndices.empty()) {
+            cout << "No rooms available for booking." << endl;
+            return;
+        }
+
+        cout << "\nAvailable Rooms:" << endl;
+        for (int i = 0; i < (int)availableIndices.size(); ++i) {
+            int idx = availableIndices[i];
+            cout << i+1 << ". Room " << rooms[idx].getRoomNumber() << " - " << rooms[idx].getRoomType() << " - $" << rooms[idx].getPricePerNight() << "/night" << endl;
+        }
+
+        int roomChoice;
+        cout << "Select Room (1-" << availableIndices.size() << "): ";
+        while (!(cin >> roomChoice) || roomChoice < 1 || roomChoice > (int)availableIndices.size()) {
+            cout << "Invalid. Enter (1-" << availableIndices.size() << "): ";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
+
+        int selectedRoomIndex = availableIndices[roomChoice - 1];
+        room = rooms[selectedRoomIndex];
+        rooms[selectedRoomIndex].setIsAvailable(false); // mark occupied
+
+        cout << "Enter Check-In Date (DD/MM/YYYY): ";
+        cin >> checkInDate;
+        cout << "Enter Check-Out Date (DD/MM/YYYY): ";
+        cin >> checkOutDate;
+
+        numberOfNights = calculateNights(checkInDate, checkOutDate);
+
+        cout << "Enter Number of Guests: ";
+        while (!(cin >> numberOfGuests) || numberOfGuests < 1) {
+            cout << "Invalid. Enter positive number: ";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
+
+        bookingStatus = "Confirmed";
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+
+    double calculateTotalCost() const {
+        return room.calculatePrice(numberOfNights);
+    }
+
+    bool isDateValid(string date) const {
+        return date.length() == 10 && date[2] == '/' && date[5] == '/';
+    }
+
+    static string getCurrentDate() {
+        time_t now = time(0);
+        tm* localtm = localtime(&now);
+        stringstream ss;
+        ss << setw(2) << setfill('0') << localtm->tm_mday << "/"
+           << setw(2) << setfill('0') << (localtm->tm_mon + 1) << "/"
+           << (localtm->tm_year + 1900);
+        return ss.str();
+    }
+
+    int calculateNights(string checkIn, string checkOut) {
+        // naive calculation, handles same-month simple cases
+        try {
+            int d1 = stoi(checkIn.substr(0,2));
+            int m1 = stoi(checkIn.substr(3,2));
+            int y1 = stoi(checkIn.substr(6,4));
+            int d2 = stoi(checkOut.substr(0,2));
+            int m2 = stoi(checkOut.substr(3,2));
+            int y2 = stoi(checkOut.substr(6,4));
+
+            if (y1==y2 && m1==m2) return max(1, d2 - d1);
+
+            // fallback: compute difference using tm
+            tm a = {0}, b = {0};
+            a.tm_mday = d1; a.tm_mon = m1-1; a.tm_year = y1-1900;
+            b.tm_mday = d2; b.tm_mon = m2-1; b.tm_year = y2-1900;
+            time_t ta = mktime(&a);
+            time_t tb = mktime(&b);
+            if (ta!= (time_t)-1 && tb != (time_t)-1) {
+                double diff = difftime(tb, ta);
+                int days = (int)(diff / (60*60*24));
+                return max(1, days);
+            }
+            return 1;
+        } catch (...) {
+            return 1;
+        }
+    }
+};
+
+int Booking::nextBookingId = 1000;
+
+// ====================== BILL ======================
+class Bill {
+private:
+    static int nextBillId;
+
+    int billId;
+    Booking booking;
+    double roomCharges;
+    double serviceCharges;
+    double tax;
+    double discount;
+    double totalAmount;
+    string paymentMethod;
+    string paymentStatus;
+
+public:
+    Bill() : billId(nextBillId++), roomCharges(0), serviceCharges(0), tax(0), discount(0), totalAmount(0), paymentMethod("Cash"), paymentStatus("Pending") {}
+
+    Bill(Booking booking) : billId(nextBillId++), booking(booking), roomCharges(0), serviceCharges(0), tax(0), discount(0), totalAmount(0), paymentMethod("Cash"), paymentStatus("Pending") {
+        generateBill();
+    }
+
+    int getBillId() const { return billId; }
+    Booking getBooking() const { return booking; }
+    double getRoomCharges() const { return roomCharges; }
+    double getServiceCharges() const { return serviceCharges; }
+    double getTax() const { return tax; }
+    double getDiscount() const { return discount; }
+    double getTotalAmount() const { return totalAmount; }
+    string getPaymentMethod() const { return paymentMethod; }
+    string getPaymentStatus() const { return paymentStatus; }
+
+    void setBooking(Booking booking) { this->booking = booking; generateBill(); }
+    void setPaymentMethod(string paymentMethod) { this->paymentMethod = paymentMethod; }
+    void setPaymentStatus(string paymentStatus) { this->paymentStatus = paymentStatus; }
+    void setDiscount(double discount) { this->discount = discount; calculateTotal(); }
+
+    void display() const {
+        cout << "\n═══════════════════════════════════════════════════════════" << endl;
+        cout << "                       HOTEL BILL                          " << endl;
+        cout << "═══════════════════════════════════════════════════════════" << endl;
+        cout << "  Bill ID:           " << billId << endl;
+        cout << "  Booking ID:        " << booking.getBookingId() << endl;
+        cout << "  Customer:          " << booking.getCustomer().getName() << endl;
+        cout << "  Room No:           " << booking.getRoom().getRoomNumber() << endl;
+        cout << "  Check-In:          " << booking.getCheckInDate() << endl;
+        cout << "  Check-Out:         " << booking.getCheckOutDate() << endl;
+        cout << "  Nights:            " << booking.getNumberOfNights() << endl;
+        cout << endl;
+        cout << "  -------------------------------------------------------" << endl;
+        cout << "  Room Charges:      $" << setw(10) << right << fixed << setprecision(2) << roomCharges << endl;
+        cout << "  Service Charges:   $" << setw(10) << right << serviceCharges << endl;
+        cout << "  Tax (15%):         $" << setw(10) << right << tax << endl;
+        cout << "  Discount:         -$" << setw(10) << right << discount << endl;
+        cout << "  -------------------------------------------------------" << endl;
+        cout << "  TOTAL AMOUNT:      $" << setw(10) << right << totalAmount << endl;
+        cout << endl;
+        cout << "  Payment Method:    " << paymentMethod << endl;
+        cout << "  Payment Status:    " << paymentStatus << endl;
+        cout << "═══════════════════════════════════════════════════════════" << endl;
+    }
+
+    void printBill() const { display(); cout << "\nThank you for choosing our hotel!" << endl; }
+
+    void saveToFile() const {
+        ofstream file("bills.txt", ios::app);
+        if (file.is_open()) {
+            file << "Bill ID: " << billId << endl;
+            file << "Customer: " << booking.getCustomer().getName() << endl;
+            file << "Total: $" << fixed << setprecision(2) << totalAmount << endl;
+            file << "Date: " << Booking::getCurrentDate() << endl;
+            file << "------------------------" << endl;
+            file.close();
+        }
+    }
+
+    void generateBill() { calculateCharges(); calculateTax(); calculateTotal(); }
+
+    void calculateCharges() { roomCharges = booking.calculateTotalCost(); serviceCharges = roomCharges * 0.10; }
+    void calculateTax() { tax = (roomCharges + serviceCharges) * 0.15; }
+    void calculateTotal() { totalAmount = roomCharges + serviceCharges + tax - discount; }
+
+    static vector<string> getPaymentMethods() { return {"Cash", "Credit Card", "Debit Card", "Bank Transfer", "Online Payment"}; }
+};
+
+int Bill::nextBillId = 5000;
+
+// ====================== HOTEL ======================
+class Hotel {
+private:
+    string hotelName, hotelAddress, hotelPhone, hotelEmail;
+    vector<Customer> customers;
+    vector<Room> rooms;
+    vector<Booking> bookings;
+    vector<Bill> bills;
+
+public:
+    Hotel(string name = "My Hotel", string address = "", string phone = "", string email = "")
+        : hotelName(name), hotelAddress(address), hotelPhone(phone), hotelEmail(email) {
+        initializeRooms();
+    }
+
+    string getHotelName() const { return hotelName; }
+    string getHotelAddress() const { return hotelAddress; }
+    string getHotelPhone() const { return hotelPhone; }
+    string getHotelEmail() const { return hotelEmail; }
+
+    void displayHotelInfo() const {
+        cout << "\n═══════════════════════════════════════════════════════════" << endl;
+        cout << "                    " << hotelName << "                      " << endl;
+        cout << "═══════════════════════════════════════════════════════════" << endl;
+        cout << "  Address:  " << hotelAddress << endl;
+        cout << "  Phone:    " << hotelPhone << endl;
+        cout << "  Email:    " << hotelEmail << endl;
+        cout << "═══════════════════════════════════════════════════════════" << endl;
+    }
+
+    void initializeRooms() {
+        // initial rooms
+        rooms.push_back(Room(101, "Standard", 100.0, true, 2));
+        rooms.push_back(Room(102, "Standard", 100.0, true, 2));
+        rooms.push_back(Room(103, "Deluxe", 150.0, true, 3));
+        rooms.push_back(Room(104, "Deluxe", 150.0, true, 3));
+        rooms.push_back(Room(201, "Suite", 250.0, true, 4));
+        rooms.push_back(Room(202, "Suite", 250.0, true, 4));
+        rooms.push_back(Room(301, "Executive Suite", 400.0, true, 4));
+        rooms.push_back(Room(302, "Presidential Suite", 800.0, true, 6));
+    }
+
+    void addCustomer() {
+        // clear screen (works on Windows). If not Windows, it's harmless.
+        #ifdef _WIN32
+            system("cls");
+        #else
+            system("clear");
+        #endif
+
+        cout << "\n═══════════════════════════════════════════════════════════" << endl;
+        cout << "                     ADD NEW CUSTOMER                      " << endl;
+        cout << "═══════════════════════════════════════════════════════════" << endl;
+
+        Customer customer;
+        customer.setId(generateCustomerId());
+        customer.input();
+
+        customers.push_back(customer);
+
+        cout << "\n✅ Customer added successfully!" << endl;
+        cout << "Customer ID: " << customer.getId() << endl;
         cout << "Press Enter to continue...";
-        cin.ignore();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
         cin.get();
     }
 
-    // Delete a student
-    void deleteStudent() {
-        system("cls");
+    void displayAllCustomers() const {
+        #ifdef _WIN32
+            system("cls");
+        #else
+            system("clear");
+        #endif
+
         cout << "\n═══════════════════════════════════════════════════════════" << endl;
-        cout << "                    DELETE STUDENT" << endl;
+        cout << "                     ALL CUSTOMERS                         " << endl;
+        cout << "═══════════════════════════════════════════════════════════" << endl;
+
+        if (customers.empty()) {
+            cout << "\n📭 No customers found!" << endl;
+        } else {
+            cout << "\nTotal Customers: " << customers.size() << endl;
+            cout << "┌──────┬──────────────────────┬────────────────┬──────────────────────┐" << endl;
+            cout << "│  ID  │        Name          │     Phone      │        Email         │" << endl;
+            cout << "├──────┼──────────────────────┼────────────────┼──────────────────────┤" << endl;
+            for (const auto& customer : customers) {
+                cout << "│ " << setw(4) << left << customer.getId() << " │ "
+                     << setw(20) << left << (customer.getName().length() > 20 ? customer.getName().substr(0, 17) + "..." : customer.getName()) << " │ "
+                     << setw(14) << left << customer.getPhone() << " │ "
+                     << setw(20) << left << (customer.getEmail().length() > 20 ? customer.getEmail().substr(0, 17) + "..." : customer.getEmail()) << " │" << endl;
+            }
+            cout << "└──────┴──────────────────────┴────────────────┴──────────────────────┘" << endl;
+        }
+        cout << "\nPress Enter to continue...";
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.get();
+    }
+
+    void searchCustomer() const {
+        #ifdef _WIN32
+            system("cls");
+        #else
+            system("clear");
+        #endif
+
+        cout << "\n═══════════════════════════════════════════════════════════" << endl;
+        cout << "                     SEARCH CUSTOMER                       " << endl;
         cout << "═══════════════════════════════════════════════════════════" << endl;
 
         int id;
-        cout << "\nEnter Student ID to delete: ";
-        while (!(cin >> id) || id <= 0) {
-            cout << "Invalid ID! Please enter a positive integer: ";
+        cout << "Enter Customer ID to search: ";
+        while (!(cin >> id)) {
+            cout << "Invalid. Enter numeric ID: ";
             cin.clear();
-            cin.ignore(1000, '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
 
-        int index = findStudentIndex(id);
-
-        if (index == -1) {
-            cout << "\n❌ Student with ID " << id << " not found!" << endl;
-        } else {
-            cout << "\nStudent to be deleted:" << endl;
-            students[index].display();
-
-            char confirm;
-            cout << "\n⚠️  Are you sure you want to delete this student? (y/n): ";
-            cin >> confirm;
-
-            if (tolower(confirm) == 'y') {
-                students.erase(students.begin() + index);
-                saveToFile();
-                cout << "\n✅ Student deleted successfully!" << endl;
-            } else {
-                cout << "\nDeletion cancelled." << endl;
+        bool found = false;
+        for (const auto& customer : customers) {
+            if (customer.getId() == id) {
+                customer.display();
+                found = true;
+                break;
             }
         }
 
+        if (!found) cout << "\n❌ Customer with ID " << id << " not found!" << endl;
+
         cout << "Press Enter to continue...";
-        cin.ignore();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
         cin.get();
     }
 
-    // Generate reports
-    void generateReports() {
-        system("cls");
+    Customer* findCustomerById(int id) {
+        for (auto& customer : customers) if (customer.getId() == id) return &customer;
+        return nullptr;
+    }
+
+    int generateCustomerId() const {
+        static int nextId = 1000;
+        return nextId++;
+    }
+
+    void addRoom() {
+        #ifdef _WIN32
+            system("cls");
+        #else
+            system("clear");
+        #endif
+
         cout << "\n═══════════════════════════════════════════════════════════" << endl;
-        cout << "                    SYSTEM REPORTS" << endl;
+        cout << "                       ADD NEW ROOM                        " << endl;
         cout << "═══════════════════════════════════════════════════════════" << endl;
 
-        if (students.empty()) {
-            cout << "\n📭 No student records found!" << endl;
-            cout << "Press Enter to continue...";
-            cin.ignore();
-            cin.get();
-            return;
-        }
+        Room room;
+        room.input();
+        rooms.push_back(room);
 
-        int choice;
-        cout << "\nSelect Report Type:" << endl;
-        cout << "1. Overall Statistics" << endl;
-        cout << "2. Top Performers (GPA > 3.5)" << endl;
-        cout << "3. Low Attendance Students (< 75%)" << endl;
-        cout << "4. Department-wise Report" << endl;
-        cout << "5. Return to Main Menu" << endl;
+        cout << "\n✅ Room added successfully!" << endl;
+        cout << "Press Enter to continue...";
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.get();
+    }
+
+    void displayAllRooms() const {
+        #ifdef _WIN32
+            system("cls");
+        #else
+            system("clear");
+        #endif
+
+        cout << "\n═══════════════════════════════════════════════════════════" << endl;
+        cout << "                       ALL ROOMS                           " << endl;
         cout << "═══════════════════════════════════════════════════════════" << endl;
-        cout << "Enter your choice (1-5): ";
 
-        while (!(cin >> choice) || choice < 1 || choice > 5) {
-            cout << "Invalid choice! Please enter 1-5: ";
-            cin.clear();
-            cin.ignore(1000, '\n');
-        }
-
-        if (choice == 5) return;
-
-        switch (choice) {
-            case 1: // Overall Statistics
-                {
-                    float totalGPA = 0;
-                    float totalAttendance = 0;
-                    float maxGPA = 0;
-                    float minGPA = 4.0;
-                    int maxGPAStudentId = 0;
-                    int minGPAStudentId = 0;
-                    string maxGPAStudentName, minGPAStudentName;
-
-                    for (const auto& student : students) {
-                        float gpa = student.getGPA();
-                        totalGPA += gpa;
-                        totalAttendance += student.getAttendance();
-
-                        if (gpa > maxGPA) {
-                            maxGPA = gpa;
-                            maxGPAStudentId = student.getId();
-                            maxGPAStudentName = student.getName();
-                        }
-
-                        if (gpa < minGPA) {
-                            minGPA = gpa;
-                            minGPAStudentId = student.getId();
-                            minGPAStudentName = student.getName();
-                        }
-                    }
-
-                    cout << "\n═══════════════════════════════════════════════════════════" << endl;
-                    cout << "                 OVERALL STATISTICS REPORT" << endl;
-                    cout << "═══════════════════════════════════════════════════════════" << endl;
-                    cout << "Total Students:          " << students.size() << endl;
-                    cout << "Average GPA:             " << fixed << setprecision(2) << totalGPA / students.size() << endl;
-                    cout << "Average Attendance:      " << fixed << setprecision(1) << totalAttendance / students.size() << "%" << endl;
-                    cout << "Highest GPA:             " << maxGPA << " (ID: " << maxGPAStudentId << ", Name: " << maxGPAStudentName << ")" << endl;
-                    cout << "Lowest GPA:              " << minGPA << " (ID: " << minGPAStudentId << ", Name: " << minGPAStudentName << ")" << endl;
-                    cout << "═══════════════════════════════════════════════════════════" << endl;
-                }
-                break;
-
-            case 2: // Top Performers
-                {
-                    cout << "\n═══════════════════════════════════════════════════════════" << endl;
-                    cout << "                TOP PERFORMERS (GPA > 3.5)" << endl;
-                    cout << "═══════════════════════════════════════════════════════════" << endl;
-
-                    vector<Student> topPerformers;
-                    for (const auto& student : students) {
-                        if (student.getGPA() > 3.5) {
-                            topPerformers.push_back(student);
-                        }
-                    }
-
-                    if (topPerformers.empty()) {
-                        cout << "No top performers found." << endl;
-                    } else {
-                        for (const auto& student : topPerformers) {
-                            cout << "ID: " << student.getId()
-                                 << ", Name: " << student.getName()
-                                 << ", GPA: " << fixed << setprecision(2) << student.getGPA()
-                                 << ", Department: " << student.getDepartment() << endl;
-                        }
-                        cout << "\nTotal Top Performers: " << topPerformers.size() << endl;
-                    }
-                }
-                break;
-
-            case 3: // Low Attendance
-                {
-                    cout << "\n═══════════════════════════════════════════════════════════" << endl;
-                    cout << "          LOW ATTENDANCE STUDENTS (< 75%)" << endl;
-                    cout << "═══════════════════════════════════════════════════════════" << endl;
-
-                    vector<Student> lowAttendance;
-                    for (const auto& student : students) {
-                        if (student.getAttendance() < 75) {
-                            lowAttendance.push_back(student);
-                        }
-                    }
-
-                    if (lowAttendance.empty()) {
-                        cout << "No students with low attendance." << endl;
-                    } else {
-                        for (const auto& student : lowAttendance) {
-                            cout << "ID: " << student.getId()
-                                 << ", Name: " << student.getName()
-                                 << ", Attendance: " << student.getAttendance() << "%"
-                                 << ", Department: " << student.getDepartment() << endl;
-                        }
-                        cout << "\nTotal Students with Low Attendance: " << lowAttendance.size() << endl;
-                    }
-                }
-                break;
-
-            case 4: // Department-wise Report
-                {
-                    cout << "\n═══════════════════════════════════════════════════════════" << endl;
-                    cout << "               DEPARTMENT-WISE REPORT" << endl;
-                    cout << "═══════════════════════════════════════════════════════════" << endl;
-
-                    // Count students by department
-                    vector<string> departments;
-                    vector<int> departmentCounts;
-
-                    for (const auto& student : students) {
-                        string dept = student.getDepartment();
-                        bool found = false;
-
-                        for (int i = 0; i < departments.size(); i++) {
-                            if (departments[i] == dept) {
-                                departmentCounts[i]++;
-                                found = true;
-                                break;
-                            }
-                        }
-
-                        if (!found) {
-                            departments.push_back(dept);
-                            departmentCounts.push_back(1);
-                        }
-                    }
-
-                    for (int i = 0; i < departments.size(); i++) {
-                        cout << departments[i] << ": " << departmentCounts[i] << " students" << endl;
-                    }
-                }
-                break;
+        if (rooms.empty()) {
+            cout << "\n📭 No rooms found!" << endl;
+        } else {
+            cout << "\nTotal Rooms: " << rooms.size() << endl;
+            cout << "┌────────────┬──────────────────┬─────────────┬─────────┬──────────────┐" << endl;
+            cout << "│ Room No    │     Type         │   Price     │ Status  │  Capacity    │" << endl;
+            cout << "├────────────┼──────────────────┼─────────────┼─────────┼──────────────┤" << endl;
+            for (const auto& room : rooms) {
+                string status = room.getIsAvailable() ? "Available" : "Occupied";
+                cout << "│ " << setw(10) << left << room.getRoomNumber() << " │ "
+                     << setw(16) << left << room.getRoomType() << " │ $" << setw(10) << left << fixed << setprecision(2) << room.getPricePerNight() << " │ "
+                     << setw(7) << left << status << " │ " << setw(12) << left << room.getMaxCapacity() << " │" << endl;
+            }
+            cout << "└────────────┴──────────────────┴─────────────┴─────────┴──────────────┘" << endl;
         }
 
         cout << "\nPress Enter to continue...";
-        cin.ignore();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
         cin.get();
     }
 
-    // Save data to file
-    void saveToFile() {
-        ofstream file(filename);
-        if (file.is_open()) {
-            for (const auto& student : students) {
-                file << student.toString() << endl;
-            }
-            file.close();
-        }
-    }
+    void createBooking() {
+        #ifdef _WIN32
+            system("cls");
+        #else
+            system("clear");
+        #endif
 
-    // Load data from file
-    void loadFromFile() {
-        ifstream file(filename);
-        if (file.is_open()) {
-            string line;
-            students.clear();
-
-            while (getline(file, line)) {
-                if (!line.empty()) {
-                    Student student = Student::fromString(line);
-                    students.push_back(student);
-                }
-            }
-            file.close();
-        }
-    }
-
-    // Display main menu
-    void displayMenu() {
-        system("cls");
         cout << "\n═══════════════════════════════════════════════════════════" << endl;
-        cout << "         STUDENT MANAGEMENT SYSTEM - MAIN MENU" << endl;
+        cout << "                      CREATE BOOKING                       " << endl;
         cout << "═══════════════════════════════════════════════════════════" << endl;
-        cout << "1. Add New Student" << endl;
-        cout << "2. Display All Students" << endl;
-        cout << "3. Search Student" << endl;
-        cout << "4. Update Student Information" << endl;
-        cout << "5. Delete Student Record" << endl;
-        cout << "6. Generate Reports" << endl;
-        cout << "7. Exit Program" << endl;
-        cout << "═══════════════════════════════════════════════════════════" << endl;
-        cout << "Enter your choice (1-7): ";
+
+        Booking booking;
+        booking.input(rooms, customers);
+
+        // only push if booking has a valid customer (customer id != 0)
+        if (booking.getNumberOfNights() > 0 && booking.getBookingStatus() == "Confirmed") {
+            bookings.push_back(booking);
+            cout << "\n✅ Booking created. Booking ID: " << booking.getBookingId() << endl;
+        } else {
+            cout << "\nBooking not created." << endl;
+        }
+
+        cout << "Press Enter to continue...";
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.get();
     }
 
-    // Main program loop
-    void run() {
+    void displayAllBookings() const {
+        #ifdef _WIN32
+            system("cls");
+        #else
+            system("clear");
+        #endif
+
+        cout << "\n═══════════════════════════════════════════════════════════" << endl;
+        cout << "                      ALL BOOKINGS                         " << endl;
+        cout << "═══════════════════════════════════════════════════════════" << endl;
+
+        if (bookings.empty()) {
+            cout << "\n📭 No bookings found!" << endl;
+        } else {
+            for (const auto& b : bookings) b.display();
+        }
+
+        cout << "\nPress Enter to continue...";
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.get();
+    }
+
+    void generateBill() {
+        #ifdef _WIN32
+            system("cls");
+        #else
+            system("clear");
+        #endif
+
+        if (bookings.empty()) {
+            cout << "\nNo bookings available. Create a booking first." << endl;
+            cout << "Press Enter to continue...";
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cin.get();
+            return;
+        }
+
+        cout << "\nSelect Booking to generate bill:" << endl;
+        for (int i = 0; i < (int)bookings.size(); ++i) {
+            cout << i+1 << ". Booking ID: " << bookings[i].getBookingId() << " - Customer: " << bookings[i].getCustomer().getName() << "\n";
+        }
+
         int choice;
+        cout << "Enter choice (1-" << bookings.size() << "): ";
+        while (!(cin >> choice) || choice < 1 || choice > (int)bookings.size()) {
+            cout << "Invalid. Enter (1-" << bookings.size() << "): ";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
 
-        do {
-            displayMenu();
+        Booking sel = bookings[choice - 1];
+        Bill bill(sel);
 
-            while (!(cin >> choice) || choice < 1 || choice > 7) {
-                cout << "Invalid choice! Please enter 1-7: ";
-                cin.clear();
-                cin.ignore(1000, '\n');
-            }
+        cout << "\nGenerated Bill:" << endl;
+        bill.display();
 
-            switch (choice) {
-                case 1:
-                    addStudent();
-                    break;
-                case 2:
-                    displayAllStudents();
-                    break;
-                case 3:
-                    searchStudent();
-                    break;
-                case 4:
-                    updateStudent();
-                    break;
-                case 5:
-                    deleteStudent();
-                    break;
-                case 6:
-                    generateReports();
-                    break;
-                case 7:
-                    system("cls");
-                    cout << "\n═══════════════════════════════════════════════════════════" << endl;
-                    cout << "  Thank you for using Student Management System!" << endl;
-                    cout << "                    Goodbye! 👋" << endl;
-                    cout << "═══════════════════════════════════════════════════════════" << endl;
-                    break;
-            }
-        } while (choice != 7);
+        cout << "\nDo you want to save this bill to file? (y/n): ";
+        char c; cin >> c;
+        if (c == 'y' || c == 'Y') {
+            bill.saveToFile();
+            cout << "Saved to bills.txt" << endl;
+        }
+
+        bills.push_back(bill);
+        cout << "Press Enter to continue...";
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.get();
+    }
+
+    void displayAllBills() const {
+        #ifdef _WIN32
+            system("cls");
+        #else
+            system("clear");
+        #endif
+
+        cout << "\n═══════════════════════════════════════════════════════════" << endl;
+        cout << "                         ALL BILLS                         " << endl;
+        cout << "═══════════════════════════════════════════════════════════" << endl;
+
+        if (bills.empty()) {
+            cout << "\n📭 No bills found!" << endl;
+        } else {
+            for (const auto& bill : bills) bill.display();
+        }
+
+        cout << "\nPress Enter to continue...";
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.get();
     }
 };
 
-// Main function
+// ====================== MAIN ======================
 int main() {
-    // Create an instance of StudentManagementSystem
-    StudentManagementSystem sms;
+    Hotel hotel("Hawi Hotel", "Addis Ababa, Ethiopia", "+251900000000", "info@hawihotel.com");
 
-    // Run the system
-    sms.run();
+    int choice = -1;
+    while (true) {
+        #ifdef _WIN32
+            system("cls");
+        #else
+            system("clear");
+        #endif
+
+        cout << "\n========== HOTEL MANAGEMENT SYSTEM ==========" << endl;
+        cout << "1. Add Customer" << endl;
+        cout << "2. View All Customers" << endl;
+        cout << "3. Search Customer" << endl;
+        cout << "4. Add Room" << endl;
+        cout << "5. View All Rooms" << endl;
+        cout << "6. Create Booking" << endl;
+        cout << "7. View All Bookings" << endl;
+        cout << "8. Generate Bill" << endl;
+        cout << "9. View All Bills" << endl;
+        cout << "0. Exit" << endl;
+        cout << "Enter choice: ";
+
+        if (!(cin >> choice)) {
+            cout << "Invalid input. Enter a number." << endl;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+
+        switch (choice) {
+            case 1: hotel.addCustomer(); break;
+            case 2: hotel.displayAllCustomers(); break;
+            case 3: hotel.searchCustomer(); break;
+            case 4: hotel.addRoom(); break;
+            case 5: hotel.displayAllRooms(); break;
+            case 6: hotel.createBooking(); break;
+            case 7: hotel.displayAllBookings(); break;
+            case 8: hotel.generateBill(); break;
+            case 9: hotel.displayAllBills(); break;
+            case 0: cout << "Goodbye!\n"; return 0;
+            default: cout << "Invalid choice!"; break;
+        }
+    }
 
     return 0;
 }
